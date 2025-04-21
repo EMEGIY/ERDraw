@@ -1,0 +1,52 @@
+{
+    "entities": [
+        {
+            "name": "Job",
+            "x": 378.0,
+            "y": 422.0,
+            "width": 120.0,
+            "height": 60.0,
+            "dataset": "salaries-ai-jobs-net.csv"
+        },
+        {
+            "name": "City",
+            "x": 865.0,
+            "y": 457.0,
+            "width": 120.0,
+            "height": 60.0,
+            "dataset": "us_cities.csv"
+        }
+    ],
+    "relations": [
+        {
+            "name": "is in a",
+            "x": 625.0,
+            "y": 278.0,
+            "width": 200.0,
+            "height": 100.0,
+            "linked_entity_1": "Job",
+            "linked_entity_2": "City",
+            "dataset": null
+        }
+    ],
+    "attributes": [
+        {
+            "name": "Population",
+            "x": 921.0,
+            "y": 578.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "City",
+            "attribute": "Population"
+        },
+        {
+            "name": " Salary",
+            "x": 204.0,
+            "y": 596.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Job",
+            "attribute": "salary_in_usd"
+        }
+    ]
+}
