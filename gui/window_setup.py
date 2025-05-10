@@ -1,6 +1,5 @@
 from PyQt6.QtGui import QAction
-from pages import editor
-from assignment import run_creator
+from gui.pages import editor
 
 class menu_bar():
     def __init__(self, parent):
@@ -28,6 +27,8 @@ class menu_bar():
         self.open_action.triggered.connect(lambda: editor(parent.main_container).open_file())
         self.new_action.triggered.connect(lambda: editor(parent.main_container).new_file())
         self.save_action.triggered.connect(lambda: parent.main_container.canvas.save_file())
+        self.export_action.triggered.connect(lambda: parent.main_container.canvas.export_file())
+        
         self.file_menu.addAction(self.new_action)
         self.file_menu.addAction(self.open_action)
         self.file_menu.addSeparator()

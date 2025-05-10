@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QSlider, QFrame
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QSlider, QFrame, QSpinBox
 from PyQt6.QtCore import Qt
 import customtkinter as ctk
 import csv
@@ -28,13 +28,18 @@ def extract_categories(csv_file_path):
 
 def setup(attribute):
     root = attribute.canvas.parent().parent()  
-    root.setFixedSize(root.width(), root.height())  
 
     window = QWidget(root)
     window.setGeometry(0, 0, root.width(), root.height())
     window.show()
     window.setStyleSheet("background-color: rgba(35,35,35,255); border-radius: 10px;")
     
+    def fit_size(size):
+        window.setFixedHeight(size.height())
+        window.setFixedWidth(size.width())
+
+    root.resizedConnect(fit_size)
+
     layout = QVBoxLayout(window)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
@@ -88,6 +93,9 @@ def run_attribute(attribute):
     size_slider.setStyleSheet("color: #ffffff; border-radius: 5px;")
     size_slider.setFixedHeight(20)
     size_slider.setFixedWidth(root.width() // 4)
+    size_slider.setToolTip(str(size_slider.value()))
+    size_slider.valueChanged.connect(lambda: size_slider.setToolTip(str(size_slider.value())))
+
     frame_layout.addWidget(size_slider)
     
     frame_layout.addSpacing(15)
@@ -118,15 +126,8 @@ def run_attribute(attribute):
     attribute_combo.setFixedHeight(30)
     attribute_combo.setFixedWidth(root.width() // 4)
     attribute_combo.addItem("None")
-    print("Attribute:", attribute.attribute if attribute.attribute else "None")
 
-    print("Item:", attribute.linked_item)
-    print("Attribute:", attribute.attribute)
-    print("Dataset:", attribute.linked_item.dataset if attribute.linked_item else None)
-    if attribute.linked_item:
-        if attribute.linked_item.dataset:
-            if ".csv" in attribute.linked_item.dataset:
-                attribute_combo.addItems(extract_categories(__file__.replace("gui\\settings.py", f"csv_files\\{attribute.linked_item.dataset}")))
+    attribute_combo.addItems(attribute.list)
 
     attribute_combo.setCurrentText(attribute.attribute if attribute.attribute else "None")
 
@@ -211,24 +212,25 @@ def run_entity(entity):
     size_slider.setStyleSheet("color: #ffffff; border-radius: 5px;")
     size_slider.setFixedHeight(20)
     size_slider.setFixedWidth(root.width() // 4)
+    size_slider.setToolTip(str(size_slider.value()))
+    size_slider.valueChanged.connect(lambda: size_slider.setToolTip(str(size_slider.value())))
     frame_layout.addWidget(size_slider)
 
     frame_layout.addSpacing(15)
 
-    dataset_label = QLabel(frame, text="Dataset:")
-    dataset_label.setStyleSheet("color: #ffffff; font-size: 16px;")
-    dataset_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-    dataset_label.setFixedWidth(root.width() // 4)
-    frame_layout.addWidget(dataset_label)
+    cap_label = QLabel(frame, text="Lines:")
+    cap_label.setStyleSheet("color: #ffffff; font-size: 16px;")
+    cap_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    cap_label.setFixedWidth(root.width() // 4)
+    frame_layout.addWidget(cap_label)
 
-    dataset_combo = QComboBox(frame)
-    dataset_combo.setStyleSheet("font-size: 14px; background-color: rgba(50,50,50,255); color: #ffffff; border-radius: 0px;")
-    dataset_combo.setFixedHeight(30)
-    dataset_combo.setFixedWidth(root.width() // 4)
-    dataset_combo.addItem("None")
-    dataset_combo.addItems(entity.canvas.imported_data_sets)
-    dataset_combo.setCurrentText(entity.dataset if entity.dataset else "None")
-    frame_layout.addWidget(dataset_combo)
+    cap_spin_box = QSpinBox()
+    cap_spin_box.setMinimum(0)  # Set the minimum value
+    cap_spin_box.setMaximum(10000)  # Set the maximum value
+    cap_spin_box.setValue(entity.cap)  # Set the default value
+    cap_spin_box.setSingleStep(1)  # Set the step size (increment/decrement)
+    cap_spin_box.setStyleSheet("font-size: 16px; background: rgba(50,50,50,255)")  # Optional: Style the spin box
+    frame_layout.addWidget(cap_spin_box)
 
     layout.addStretch()
 
@@ -257,7 +259,7 @@ def run_entity(entity):
             [
                 name_entry.text(), 
                 size_slider.value() / 100, 
-                dataset_combo.currentText() if dataset_combo.currentText() != "None" else None
+                cap_spin_box.value()
                 ]
             )
         window.close()
@@ -322,6 +324,8 @@ def run_relation(relation):
     size_slider.setStyleSheet("color: #ffffff; border-radius: 5px;")
     size_slider.setFixedHeight(20)
     size_slider.setFixedWidth(root.width() // 4)
+    size_slider.setToolTip(str(size_slider.value()))
+    size_slider.valueChanged.connect(lambda: size_slider.setToolTip(str(size_slider.value())))
     frame_layout.addWidget(size_slider)
 
     frame_layout.addSpacing(15)
@@ -360,21 +364,21 @@ def run_relation(relation):
     if relation.linked_entity_2: connection_combo_2.setCurrentText(relation.linked_entity_2.name if relation.linked_entity_2 else "None")
     frame_layout.addWidget(connection_combo_2)
 
-    dataset_label = QLabel(frame, text="Dataset:")
-    dataset_label.setStyleSheet("color: #ffffff; font-size: 16px;")
-    dataset_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-    dataset_label.setFixedWidth(root.width() // 4)
-    frame_layout.addWidget(dataset_label)
-    
-    dataset_combo = QComboBox(frame)
-    dataset_combo.setStyleSheet("font-size: 14px; background-color: rgba(50,50,50,255); color: #ffffff; border-radius: 0px;")
-    dataset_combo.setFixedHeight(30)
-    dataset_combo.setFixedWidth(root.width() // 4)
-    dataset_combo.addItem("None")
-    dataset_combo.addItems(entity.dataset for entity in relation.canvas.entities if entity.dataset)
-    dataset_combo.addItems(relation.canvas.imported_data_sets)
-    dataset_combo.setCurrentText(relation.dataset if relation.dataset else "None")
-    frame_layout.addWidget(dataset_combo)
+    frame_layout.addSpacing(15)
+
+    cap_label = QLabel(frame, text="Lines:")
+    cap_label.setStyleSheet("color: #ffffff; font-size: 16px;")
+    cap_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    cap_label.setFixedWidth(root.width() // 4)
+    frame_layout.addWidget(cap_label)
+
+    cap_spin_box = QSpinBox()
+    cap_spin_box.setMinimum(0)  # Set the minimum value
+    cap_spin_box.setMaximum(10000)  # Set the maximum value
+    cap_spin_box.setValue(relation.cap)  # Set the default value
+    cap_spin_box.setSingleStep(1)  # Set the step size (increment/decrement)
+    cap_spin_box.setStyleSheet("font-size: 16px; background: rgba(50,50,50,255)")  # Optional: Style the spin box
+    frame_layout.addWidget(cap_spin_box)
 
     layout.addStretch()
 
@@ -408,7 +412,7 @@ def run_relation(relation):
                 size_slider.value() / 100, 
                 connection_combo_1.currentText() if connection_combo_1.currentText() != "None" else None,
                 connection_combo_2.currentText() if connection_combo_2.currentText() != "None" else None,
-                dataset_combo.currentText() if dataset_combo.currentText() != "None" else None
+                cap_spin_box.value()
             ]
         )
         

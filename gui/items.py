@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem
 from PyQt6.QtCore import Qt, QPointF, QRectF, QLineF
 from PyQt6.QtGui import QPen, QBrush, QColor, QPolygon, QPolygonF
-import settings
+import gui.settings as settings
 
 class line(QGraphicsLineItem):
     def __init__(self, obejct1, object2):
@@ -14,16 +14,12 @@ class line(QGraphicsLineItem):
 
     def update_line(self):
         # Get the center points of the rectangles
-        print("Obj 1:", self.obj_1)
-        print("Obj 2:", self.obj_2)
         rect1_center = self.obj_1.sceneBoundingRect().center()
         rect2_center = self.obj_2.sceneBoundingRect().center()
         self.setLine(rect1_center.x(), rect1_center.y(), rect2_center.x(), rect2_center.y())
 
-
-
 class relation(QGraphicsPolygonItem):
-    def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, linked_entity_1 = False, linked_entity_2 = False, dataset = False):
+    def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, linked_entity_1 = False, linked_entity_2 = False, cap = 100):
         super().__init__()
         self.size_mult = 1
 
@@ -37,18 +33,20 @@ class relation(QGraphicsPolygonItem):
         self.width = width
         self.height = height
         self.canvas = parent
-
+        
 
         self.setBrush(QBrush(QColor(50,50,50, 255)))
         self.setPen(QPen(Qt.GlobalColor.white, 2))
         
-        self.dataset = dataset
+        self.cap = cap
         self.linked_entity_1 = linked_entity_1
         self.linked_entity_2 = linked_entity_2
 
         self.setFlags(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable | QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges)
 
         self.setPolygon(QPolygonF([QPointF(x, y + height // 2), QPointF(x+ width // 2, y), QPointF(x, y - height // 2), QPointF(x - width // 2, y)]))
+
+        self.update_settings([self.name, self.size_mult, self.linked_entity_1, self.linked_entity_2, self.cap])
 
     def to_dict(self):
         return {
@@ -59,7 +57,7 @@ class relation(QGraphicsPolygonItem):
             'height': self.rect().height(),
             'linked_entity_1': self.linked_entity_1.name,
             'linked_entity_2': self.linked_entity_2.name,
-            'dataset': self.dataset
+            'cap': self.cap
         }
 
     def rect(self):
@@ -71,8 +69,6 @@ class relation(QGraphicsPolygonItem):
 
     def itemChange(self, change, value):
         self.canvas.update_lines()
-
-
         if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionHasChanged:
             self.new_x = value.x()
             self.new_y = value.y()
@@ -86,9 +82,10 @@ class relation(QGraphicsPolygonItem):
             self.size_mult = updated_settings[1]
             self.linked_entity_1 = self.canvas.name_to_object(updated_settings[2]) if updated_settings[2] != "None" else False
             self.linked_entity_2 = self.canvas.name_to_object(updated_settings[3]) if updated_settings[3] != "None" else False
-            self.dataset = updated_settings[4] if updated_settings[4] != "None" else False
+            self.cap = updated_settings[4]
 
-            print("Saved settings:", updated_settings)
+            self.height = 60 * self.size_mult
+            self.width  = 120 * self.size_mult
 
             self.setPolygon(QPolygonF(
                 [
@@ -105,19 +102,22 @@ class relation(QGraphicsPolygonItem):
             self.canvas.update_lines()
     
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
+        mods = QApplication.keyboardModifiers()
+        if event.button() == Qt.MouseButton.RightButton and mods & Qt.KeyboardModifier.ShiftModifier:
+            self.canvas.scene.removeItem(self)
+            self.canvas.relations.remove(self)
+        elif event.button() == Qt.MouseButton.RightButton:
             settings.run_relation(self)
         else:
             super().mousePressEvent(event)
 
-
 class entity(QGraphicsRectItem):
-    def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, dataset = False):
+    def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, cap=100):
         super().__init__()
         self.size_mult = 1
 
         self.name = text
-        self.dataset = dataset
+        self.cap = cap
         self.org_x = x
         self.org_y = y
         self.new_x = x
@@ -132,6 +132,8 @@ class entity(QGraphicsRectItem):
 
         self.setRect(x - width // 2, y - height // 2, width, height)
 
+        self.update_settings([self.name, self.size_mult, self.cap])
+
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget)
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.name)
@@ -143,7 +145,7 @@ class entity(QGraphicsRectItem):
             'y': self.new_y - self.rect().height() // 2,
             'width': self.rect().width(),
             'height': self.rect().height(),
-            'dataset': self.dataset
+            'cap': self.cap
         }
 
     def itemChange(self, change, value):
@@ -160,24 +162,26 @@ class entity(QGraphicsRectItem):
             
             self.name = updated_settings[0]
             self.size_mult = updated_settings[1]
-            self.dataset = updated_settings[2] if updated_settings[2] != "None" else False
-
-            print(self.dataset)
+            self.cap = updated_settings[2]
 
             self.setRect(self.org_x, self.org_y, 120 * self.size_mult, 60 * self.size_mult)
             self.update()
         
             self.canvas.redraw_lines()
             self.canvas.update_lines()
-    
+
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
+        mods = QApplication.keyboardModifiers()
+        if event.button() == Qt.MouseButton.RightButton and mods & Qt.KeyboardModifier.ShiftModifier:
+            self.canvas.scene.removeItem(self)
+            self.canvas.entities.remove(self)
+        elif event.button() == Qt.MouseButton.RightButton:
             settings.run_entity(self)
         else:
             super().mousePressEvent(event)
 
-
 class attribute(QGraphicsEllipseItem):
+    
     def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, linked_item = False, attribute = False):
         super().__init__()
         self.size_mult = 1
@@ -186,6 +190,21 @@ class attribute(QGraphicsEllipseItem):
         self.attribute = attribute
         self.linked_item = linked_item
         self.canvas = parent
+
+        # All available attributes
+        self.list = [
+            "name",
+            "first name",
+            "last name",
+            "prefix",
+            "suffix",
+            "address",
+            "street adress",
+            "book title",
+            "cs_field",
+            "annual_salary",
+            "date"
+        ]
 
         self.org_x = x
         self.org_y = y
@@ -199,6 +218,8 @@ class attribute(QGraphicsEllipseItem):
         self.setFlags(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable | QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges)
         
         self.setRect(x, y, width, height)
+
+        self.update_settings([self.name, self.size_mult, self.attribute, self.linked_item])
     
     def to_dict(self):
         return {
@@ -231,8 +252,6 @@ class attribute(QGraphicsEllipseItem):
             self.attribute = updated_settings[2] if updated_settings[2] != "None" else False
             self.linked_item = self.canvas.name_to_object(updated_settings[3]) if updated_settings[3] != "None" else False
 
-            print(self.attribute)
-
             self.setRect(self.org_x, self.org_y, 120 * self.size_mult, 60 * self.size_mult)
             self.update()
         
@@ -242,7 +261,11 @@ class attribute(QGraphicsEllipseItem):
             self.canvas.update_lines()
     
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
+        mods = QApplication.keyboardModifiers()
+        if event.button() == Qt.MouseButton.RightButton and mods & Qt.KeyboardModifier.ShiftModifier:
+            self.canvas.scene.removeItem(self)
+            self.canvas.attributes.remove(self)
+        elif event.button() == Qt.MouseButton.RightButton:
             settings.run_attribute(self)
         else:
             super().mousePressEvent(event)

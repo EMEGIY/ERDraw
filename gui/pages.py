@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QMessageBox
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QSize
-from prefabs.buttons import menu_button
-import action
-from canvas import canvas
+from gui.prefabs.buttons import menu_button
+import gui.action as action
+from gui.canvas import canvas
 
 def clear_layout(layout):
     while layout.count():
@@ -13,56 +13,13 @@ def clear_layout(layout):
         elif item.layout():
             clear_layout(item.layout())  # Recursively clear nested layouts
 
-class welcome(QWidget):
-    def __init__(self, parent):
-        super().__init__()
-        
-        self.setParent(parent)
-        self.root = parent
 
-        for child in parent.children():
-            if isinstance(child, QWidget):
-                child.deleteLater()
-
-
-        parent.setLayout(None)
-
-        self.widget_layout = QVBoxLayout() 
-        parent.setLayout(self.widget_layout)
-        
-        welcome_label = QLabel(self, text="Welcome to the ErdModeler!")
-        welcome_label.setStyleSheet("font-size: 35px;")
-     
-        getting_started_label = QLabel(self, text="How to get started:")
-        getting_started_label.setStyleSheet("color: rgba(170,170,170,255); font-size: 18px;")
-
-        create_file_button = menu_button(parent=self, text="create a new erd", icon_paths=[self.root.parent().repo_path + "icons\\add_database_active.png", self.root.parent().repo_path + "icons\\add_database_inactive.png"])
-        open_file_button = menu_button(parent=self, text="open an existing erd", icon_paths=[self.root.parent().repo_path + "icons\\open_database_active.png", self.root.parent().repo_path + "icons\\open_database_inactive.png"])
-        csv_file_button = menu_button(parent=self, text="extend the csv collection", icon_paths=[self.root.parent().repo_path + "icons\\add_csv_active.png", self.root.parent().repo_path + "icons\\add_csv_inactive.png"])
-
-        open_file_button.clicked.connect(lambda: editor(parent).open_file())
-        create_file_button.clicked.connect(lambda: editor(parent).new_file())
-
-        self.widget_layout.addStretch()
-
-        self.widget_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.widget_layout.addWidget(welcome_label)
-        self.widget_layout.addSpacing(2)
-        self.widget_layout.addWidget(getting_started_label)
-        self.widget_layout.addSpacing(20)
-        self.widget_layout.addWidget(create_file_button)
-        self.widget_layout.addWidget(open_file_button)
-        self.widget_layout.addWidget(csv_file_button)
-
-        self.widget_layout.addStretch()
 
 class editor(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.setParent(parent)
         self.root = parent
-
-
 
     def setup_root(self):
         for child in self.root.children():

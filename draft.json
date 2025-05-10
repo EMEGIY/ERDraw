@@ -1,0 +1,42 @@
+{
+    "entities": [
+        {
+            "name": "Human",
+            "x": 272.0,
+            "y": 235.0,
+            "width": 120.0,
+            "height": 60.0,
+            "cap": 50
+        }
+    ],
+    "relations": [],
+    "attributes": [
+        {
+            "name": "Name",
+            "x": 277.0,
+            "y": 99.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "name"
+        },
+        {
+            "name": "Adress",
+            "x": 424.0,
+            "y": 343.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "address"
+        },
+        {
+            "name": "Birthday",
+            "x": 102.0,
+            "y": 327.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "date"
+        }
+    ]
+}

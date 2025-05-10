@@ -1,19 +1,23 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QEvent, QObject
 from PyQt6.QtGui import QIcon
-from window_setup import menu_bar
-from canvas import canvas
-from pages import welcome
-import action
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
-from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt, QSize
-from prefabs.buttons import menu_button
-import action
-from canvas import canvas
+from gui.window_setup import menu_bar
+from gui.canvas import canvas
+from gui.pages import welcome
+import gui.action as action
 
 
+
+class ResizeEventFilter(QObject):
+    def __init__(self, callback):
+        super().__init__()
+        self.callback = callback
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Resize:
+            self.callback(event.size())  # Call the callback with the new size
+        return super().eventFilter(obj, event)
 
 class MainInstance(QMainWindow):
     def __init__(self):
@@ -27,11 +31,18 @@ class MainInstance(QMainWindow):
         self.setGeometry(100, 100, 1100, 800)
         self.setWindowIcon(QIcon(self.repo_path + "icons\\logo.png")) 
 
+
         self.main_container = QWidget(self)
         self.setCentralWidget(self.main_container)
 
         welcome(self.main_container)
 
+
+    def resizedConnect(self, callback):
+        self.resize_event_filter = ResizeEventFilter(callback)
+        self.installEventFilter(self.resize_event_filter)
+    
+    
 
 def listStyles():
     from PyQt6.QtWidgets import QApplication, QStyleFactory
