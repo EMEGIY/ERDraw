@@ -1,0 +1,10 @@
+# This file explains the structure of this repository, explaining the contents and behaviour of all Units
+
+# /Gui
+# -> main.py
+#     runs the gui application, as well as all app mechanics
+
+# -> pages.py
+#     declares the two most important pages of the application, including some additional methods to setup the editor page from a file path
+#     -> Editor::setup_root() # NOTE: DO NOT USE THIS METHOD OUTSIDE OF THE EDITOR PAGE (its meant to be prevent code duplications, as a member, within the class)
+#         sets up the root layout of the editor page, clearing all previous widgets and setting up the canvas

@@ -1,0 +1,97 @@
+{
+    "entities": [
+        {
+            "name": "Book",
+            "x": 186.0,
+            "y": 224.0,
+            "width": 120.0,
+            "height": 60.0,
+            "cap": 100
+        },
+        {
+            "name": "Human",
+            "x": 537.0,
+            "y": 224.0,
+            "width": 120.0,
+            "height": 60.0,
+            "cap": 100
+        }
+    ],
+    "relations": [
+        {
+            "name": "borrows",
+            "x": 429.0,
+            "y": 256.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_entity_1": "Book",
+            "linked_entity_2": "Human",
+            "cap": 100
+        }
+    ],
+    "attributes": [
+        {
+            "name": "TItle",
+            "x": 4.0,
+            "y": 219.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Book",
+            "attribute": "book title"
+        },
+        {
+            "name": "Name",
+            "x": 727.0,
+            "y": 224.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "name"
+        },
+        {
+            "name": "Adress",
+            "x": 690.0,
+            "y": 142.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "address"
+        },
+        {
+            "name": "Job",
+            "x": 683.0,
+            "y": 309.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "Human",
+            "attribute": "cs_field"
+        },
+        {
+            "name": "Name",
+            "x": 461.0,
+            "y": 98.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "borrows",
+            "attribute": "name"
+        },
+        {
+            "name": "Title",
+            "x": 282.0,
+            "y": 91.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "borrows",
+            "attribute": "book title"
+        },
+        {
+            "name": "Date",
+            "x": 368.0,
+            "y": 23.0,
+            "width": 120.0,
+            "height": 60.0,
+            "linked_item": "borrows",
+            "attribute": "date"
+        }
+    ]
+}
