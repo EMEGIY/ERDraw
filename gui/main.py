@@ -27,14 +27,15 @@ class MainInstance(QMainWindow):
         self.menu_bar = menu_bar(self)
 
         # Window Configuration
-        self.setWindowTitle("ErdModeler")
+        self.setWindowTitle("ERDraw")
         self.setGeometry(100, 100, 1100, 800)
-        self.setWindowIcon(QIcon(self.repo_path + "icons\\logo.png")) 
-
-
+        self.setWindowIcon(QIcon(self.repo_path + "icons\\logo.ico")) 
+        
+        # Widget box
         self.main_container = QWidget(self)
         self.setCentralWidget(self.main_container)
 
+        # Welcome screen
         welcome(self.main_container)
 
 
@@ -43,21 +44,12 @@ class MainInstance(QMainWindow):
         self.installEventFilter(self.resize_event_filter)
     
     
-
-def listStyles():
-    from PyQt6.QtWidgets import QApplication, QStyleFactory
-
-    app = QApplication([])
-    print(QStyleFactory.keys())  # List all available styles
-
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Macintosh")  # Set the style to "Fusion" or any other available style
     window = MainInstance()
     window.show()
     sys.exit(app.exec())
 
-
 if __name__ == "__main__":
-    main()
+    main() # dosent matter rather 
 

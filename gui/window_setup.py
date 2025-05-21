@@ -42,25 +42,18 @@ class menu_bar():
         self.create_relation_action = QAction("Create relation", parent)
         self.create_entity_action = QAction("Create entity", parent)
         self.create_attribute_action = QAction("Create attribute", parent)
-        self.create_editor_action = QAction("Create assignment table", parent)
 
-        self.create_editor_action.setShortcut("Ctrl+T")
-
-        self.create_relation_action.triggered.connect(lambda: parent.main_container.canvas.add_relation("Relation "))
-        self.create_entity_action.triggered.connect(lambda: parent.main_container.canvas.add_entity("Entity "))
-        self.create_attribute_action.triggered.connect(lambda: parent.main_container.canvas.add_attribute("Attribute "))
-        self.create_editor_action.triggered.connect(lambda: run_creator(parent.main_container.canvas))
+        self.create_relation_action.triggered.connect(lambda: parent.main_container.canvas.add_relation("Relation"))
+        self.create_entity_action.triggered.connect(lambda: parent.main_container.canvas.add_entity("Entity"))
+        self.create_attribute_action.triggered.connect(lambda: parent.main_container.canvas.add_attribute("Attribute"))
         
         self.create_attribute_action.setEnabled(False)
         self.create_relation_action.setEnabled(False)
         self.create_entity_action.setEnabled(False)
-        self.create_editor_action.setEnabled(False)
 
         self.edit_menu.addAction(self.create_relation_action)
         self.edit_menu.addAction(self.create_entity_action)
         self.edit_menu.addAction(self.create_attribute_action)
-        self.edit_menu.addSeparator()
-        self.edit_menu.addAction(self.create_editor_action)
 
         # Add "Help" menu
         help_menu = self.menu_bar.addMenu("Help")
@@ -75,4 +68,3 @@ class menu_bar():
         self.create_relation_action.setEnabled(True)
         self.create_entity_action.setEnabled(True)
         self.create_attribute_action.setEnabled(True)
-        self.create_editor_action.setEnabled(True)

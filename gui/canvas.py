@@ -4,10 +4,12 @@
 # opening features, which are heavly working with the erd items in "gui/items.py" 
 
 
+
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsRectItem, QMessageBox, QInputDialog
 from PyQt6.QtCore import Qt, QPointF, QDir
 from PyQt6.QtGui import QPen
 from gui.settings import extract_categories
+import conv_dict
 import gui.items as items
 import random
 import generator
@@ -38,6 +40,8 @@ class canvas(QGraphicsView):
         # Stores the items and connections
         # BUG: When an item gets removed, the
         #      line remains
+        # POSSIBLE_FIX: 
+        #
         self.lines = []
         self.relations =[]
         self.entities = []
@@ -80,7 +84,7 @@ class canvas(QGraphicsView):
         except Exception as e:
                 msg_box = QMessageBox(self)
                 msg_box.setWindowTitle("Error during saving")
-                msg_box.setText("Oh no! An error occurred while saving the file.")
+                msg_box.setText("Oh no! An error occurred while saving the file.\n\nError details: \n" + str(e))
                 msg_box.setIcon(QMessageBox.Icon.Critical)
                 msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
                 msg_box.setStyleSheet("background-color: rgba(35,35,35,255); color: white; font-size: 16px;")
@@ -223,7 +227,6 @@ class canvas(QGraphicsView):
         
         if new_folder_path:
             # Generator Instance
-            gen = generator.get()
 
             for entity in self.entities:
                 current_entity_attributes = []
@@ -250,21 +253,9 @@ class canvas(QGraphicsView):
 
                         for attribute in current_entity_attributes:
 
-                            conversion_dict = {
-                                "name": gen.name,
-                                "first name": gen.first_name,
-                                "last name": gen.last_name,
-                                "prefix": gen.prefix,
-                                "suffix": gen.suffix,
-                                "address": gen.address,
-                                "street adress": gen.street_address,
-                                "book title": gen.book_title,
-                                "cs_field": gen.cs_field,
-                                "annual_salary": gen.annual_salary,
-                                "date": gen.date
-                            }
+                            str_to_function_dict = conv_dict.get()
                             
-                            line += (conversion_dict[attribute.attribute])().replace("\n", "") + ","
+                            line += str((str_to_function_dict[attribute.attribute])()).replace("\n", "") + ","
 
                         f.write(line[:-1] + "\n")
 
@@ -321,20 +312,9 @@ class canvas(QGraphicsView):
                         lines = [lines[0]] + random.sample(lines[1:], len(lines[1:]))
                     else:
                         for line in lines[1:]:
-                            conversion_dict = {
-                                "name": gen.name,
-                                "first name": gen.first_name,
-                                "last name": gen.last_name,
-                                "prefix": gen.prefix,
-                                "suffix": gen.suffix,
-                                "address": gen.address,
-                                "street adress": gen.street_address,
-                                "book title": gen.book_title,
-                                "cs_field": gen.cs_field,
-                                "annual_salary": gen.annual_salary,
-                                "date": gen.date
-                            }
-                            line.append(conversion_dict[attribute.attribute]())
+                            str_to_function_dict = conv_dict.get() 
+                            print(str_to_function_dict)
+                            line.append(str_to_function_dict[attribute.attribute]())
                         lines[0].append(attribute.attribute)
 
                         
