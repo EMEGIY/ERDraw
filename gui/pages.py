@@ -13,8 +13,6 @@ def clear_layout(layout):
         elif item.layout():
             clear_layout(item.layout())  # Recursively clear nested layouts
 
-
-
 class editor(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -92,7 +90,7 @@ class welcome(QWidget):
         self.widget_layout = QVBoxLayout() 
         parent.setLayout(self.widget_layout)
         
-        welcome_label = QLabel(self, text="Welcome to the ErdModeler!")
+        welcome_label = QLabel(self, text="Welcome to ERDraw!")
         welcome_label.setStyleSheet("font-size: 35px;")
      
         getting_started_label = QLabel(self, text="How to get started:")
@@ -101,6 +99,8 @@ class welcome(QWidget):
         create_file_button = menu_button(parent=self, text="create a new erd", icon_paths=[self.root.parent().repo_path + "icons\\add_database_active.png", self.root.parent().repo_path + "icons\\add_database_inactive.png"])
         open_file_button = menu_button(parent=self, text="open an existing erd", icon_paths=[self.root.parent().repo_path + "icons\\open_database_active.png", self.root.parent().repo_path + "icons\\open_database_inactive.png"])
         csv_file_button = menu_button(parent=self, text="extend the csv collection", icon_paths=[self.root.parent().repo_path + "icons\\add_csv_active.png", self.root.parent().repo_path + "icons\\add_csv_inactive.png"])
+        csv_file_button.setEnabled(False)
+
 
         open_file_button.clicked.connect(lambda: editor(parent).open_file())
         create_file_button.clicked.connect(lambda: editor(parent).new_file())

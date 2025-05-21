@@ -1,6 +1,14 @@
+# This file includes all items that will be used to draw the ERD
+# as well as lines to connect them. They are all subclasses of QGraphicItems
+# entity : QGraphicsRect
+# relation : QGraphicsPolygon // there is no diamond in pyqt :(
+# attribute: QGraphicsEclipse
+
+# Imports
 from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem
 from PyQt6.QtCore import Qt, QPointF, QRectF, QLineF
 from PyQt6.QtGui import QPen, QBrush, QColor, QPolygon, QPolygonF
+import conv_dict
 import gui.settings as settings
 
 class line(QGraphicsLineItem):
@@ -21,31 +29,46 @@ class line(QGraphicsLineItem):
 class relation(QGraphicsPolygonItem):
     def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, linked_entity_1 = False, linked_entity_2 = False, cap = 100):
         super().__init__()
-        self.size_mult = 1
-
         self.name = text
-        self.org_x = x
+        # Start pos
+        self.org_x = x 
         self.org_y = y
+        # Current pos
         self.new_x = x
         self.new_y = y
-        self.new_width = width
-        self.new_height = height
+        
+        # Starting size
         self.width = width
         self.height = height
+        # Current size
+        self.new_width = width
+        self.new_height = height
+
         self.canvas = parent
         
-
+        # Fill Color
         self.setBrush(QBrush(QColor(50,50,50, 255)))
+        # Border Color
         self.setPen(QPen(Qt.GlobalColor.white, 2))
         
-        self.cap = cap
-        self.linked_entity_1 = linked_entity_1
-        self.linked_entity_2 = linked_entity_2
+        # Changable attributes
+        self.cap = cap # Number of lines that will be generated
+        self.linked_entity_1 = linked_entity_1 # will be obj not string
+        self.linked_entity_2 = linked_entity_2 # ---"---
+        self.size_mult = 1 # width, height = width * size, height * size
 
         self.setFlags(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable | QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges)
 
-        self.setPolygon(QPolygonF([QPointF(x, y + height // 2), QPointF(x+ width // 2, y), QPointF(x, y - height // 2), QPointF(x - width // 2, y)]))
+        # Set points        
+        self.setPolygon(QPolygonF(
+            [QPointF(x, y + height // 2), # Bottom point 
+             QPointF(x + width // 2, y), # Right point 
+             QPointF(x, y - height // 2), # Top point
+             QPointF(x - width // 2, y)] # Left point
+             )
+        )
 
+        # Sync the item
         self.update_settings([self.name, self.size_mult, self.linked_entity_1, self.linked_entity_2, self.cap])
 
     def to_dict(self):
@@ -61,14 +84,24 @@ class relation(QGraphicsPolygonItem):
         }
 
     def rect(self):
-        return QRectF(self.org_x - self.width // 2, self.org_y - self.height // 2, self.width, self.height)
+        # This returns the rectangular size of the diamond
+        return QRectF(
+            self.org_x - self.width // 2, 
+            self.org_y - self.height // 2, 
+            self.width, 
+            self.height
+        )
 
     def paint(self, painter, option, widget=None):
+        # Draws the text manualy (there is no build in way 
+        # as far as i can tell)
         super().paint(painter, option, widget)
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.name)
 
     def itemChange(self, change, value):
+        # Handels dragging: adjust position & updating lines
         self.canvas.update_lines()
+
         if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionHasChanged:
             self.new_x = value.x()
             self.new_y = value.y()
@@ -114,24 +147,30 @@ class relation(QGraphicsPolygonItem):
 class entity(QGraphicsRectItem):
     def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, cap=100):
         super().__init__()
-        self.size_mult = 1
-
-        self.name = text
-        self.cap = cap
+        # Starting pos
         self.org_x = x
         self.org_y = y
+
+        # Current pos
         self.new_x = x
         self.new_y = y
 
+        # Changable attributes
+        self.size_mult = 1 # Size factor
+        self.name = text
+        self.cap = cap # Number of lines
+
         self.canvas = parent
 
+        # Fill(Brush) and Border(Pen) color
         self.setBrush(QBrush(QColor(50,50,50, 255)))
         self.setPen(QPen(Qt.GlobalColor.white, 2))
 
+        # Sets Rect
         self.setFlags(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable | QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges)
-
         self.setRect(x - width // 2, y - height // 2, width, height)
 
+        # Sync settings
         self.update_settings([self.name, self.size_mult, self.cap])
 
     def paint(self, painter, option, widget=None):
@@ -180,47 +219,41 @@ class entity(QGraphicsRectItem):
         else:
             super().mousePressEvent(event)
 
-class attribute(QGraphicsEllipseItem):
-    
+class attribute(QGraphicsEllipseItem):  
     def __init__(self, text, parent, x = 100, y = 100, width = 120, height = 60, linked_item = False, attribute = False):
         super().__init__()
-        self.size_mult = 1
-
-        self.name = text
-        self.attribute = attribute
-        self.linked_item = linked_item
-        self.canvas = parent
 
         # All available attributes
-        self.list = [
-            "name",
-            "first name",
-            "last name",
-            "prefix",
-            "suffix",
-            "address",
-            "street adress",
-            "book title",
-            "cs_field",
-            "annual_salary",
-            "date"
-        ]
+        self.list = [item for item in conv_dict.get()]
 
+        # Intitial pos
         self.org_x = x
         self.org_y = y
 
+        # Current pos
         self.new_x = x
         self.new_y = y
 
+        self.size_mult = 1
+        self.name = text
+        self.attribute = attribute # actual attribute: string from self.list
+                                   # (will be decoded on export)
+        self.linked_item = linked_item
+        self.canvas = parent
+
+        # Color stuff
         self.setBrush(QBrush(QColor(50,50,50, 255)))
         self.setPen(QPen(Qt.GlobalColor.white, 2))
 
+        # Sets rect
         self.setFlags(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable | QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges)
-        
         self.setRect(x, y, width, height)
 
+        # Sync settings
         self.update_settings([self.name, self.size_mult, self.attribute, self.linked_item])
-    
+
+        # Rest of code is mostly the same as in other items
+        
     def to_dict(self):
         return {
             'name': self.name,
